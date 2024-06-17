@@ -1,13 +1,24 @@
 services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+
   node-red:
     image: nodered/node-red:latest-18-minimal
     container_name: node-red
     environment:
       - TZ=Asia/Jakarta
-    ports:
-      - "1880:1880"
-    networks:
-      - iot
     volumes:
       - ./settings.js:/data/settings.js
       - node-red-data:/data
@@ -17,16 +28,18 @@ services:
     container_name: mosquitto
     ports:
       - "1883:1883"
-      - "9001:9001"
-    networks:
-      - iot
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mosquitto:/mosquitto
 
 volumes:
+  caddy-data:
+  caddy-config:
   node-red-data:
   mosquitto:
 
 networks:
-  iot:
+  default:
+    external: true
+    name: caddy
+ 
